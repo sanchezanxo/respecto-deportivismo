@@ -23,7 +23,7 @@ window.DEPOR_DATA = {
       kicker: "Antecedentes: a transformación do estadio",
       title: "O club acelera os cambios cara ao modelo hospitality",
       body: "Inaugúranse novas zonas exclusivas dentro de Riazor, como Club Riazor ou Bar Bruma, e refórzase a oferta VIP xa existente. Nos meses seguintes o club continúa ampliando este modelo, con máis espazos premium e novas reformas previstas no estadio.",
-      image: "img/hospitality.avif",
+      image: "img/hospitality.webp",
       source: {
         label: "Comunicado do RC Deportivo",
         url: "https://www.rcdeportivo.es/gl/noticias/o-rc-deportivo-aumenta-a-sua-oferta-hospitality-en-abanca-riazor-con-novos-espazos-exclusivos"
@@ -37,7 +37,7 @@ window.DEPOR_DATA = {
       kicker: "O punto de partida",
       title: "O Dépor volve a Primeira a carón da súa xente",
       body: "O Dépor certifica o ascenso oito anos despois de abandonar a máxima categoría. Faino acompañado por milleiros de deportivistas e cunha masa social que sostivo o club mesmo nos anos de Primeira Federación.",
-      image: "img/ascenso.avif",
+      image: "img/ascenso.webp",
       source: {
         label: "Comunicado do RC Deportivo",
         url: "https://www.rcdeportivo.es/es/noticias/doblete-de-bil-en-el-estadio-jose-zorrilla-para-dar-los-3-puntos-decisivos-al-depor"
@@ -51,7 +51,7 @@ window.DEPOR_DATA = {
       kicker: "O RC Deportivo rompe coa súa masa social",
       title: "O club criminaliza a celebración do ascenso",
       body: "Miles de deportivistas saltan ao campo na festa final polo ascenso en Riazor. O club responde cun duro comunicado sobre os «actos vandálicos» e ameaza con medidas disciplinarias, económicas e administrativas. Para moitos seareiros é o primeiro sinal dun cambio de relación coa bancada.",
-      image: "img/invasion.jpg",
+      image: "img/invasion.webp",
       source: {
         label: "Comunicado do RC Deportivo",
         url: "https://www.rcdeportivo.es/gl/noticias/el-rc-deportivo-condena-los-actos-vandalicos-ocurridos-en-abanca-riazor"
@@ -65,7 +65,7 @@ window.DEPOR_DATA = {
       kicker: "Persecución arbitraria a Maratón",
       title: "O RC Deportivo impón condicións de excepción en Maratón",
       body: "Un día antes da campaña de abonos, os socios de Maratón Inferior reciben once condicións excepcionais para renovar: identificación nominativa, restricións á cesión do carné, límites sobre mensaxes e simboloxía e a posibilidade de perder a condición de abonado da grada. Case 4.000 persoas quedan sometidas a un réxime diferente ao resto de Riazor.",
-      image: "img/preso.jpg",
+      image: "img/preso.webp",
       source: {
         label: "Riazor.org",
         url: "https://www.riazor.org/marathon-inferior-explica-deportivo-nuevas-condiciones-abono/"
@@ -79,7 +79,7 @@ window.DEPOR_DATA = {
       kicker: "O enfado esténdese",
       title: "Masiva subida no prezo dos abonos",
       body: "A campaña do regreso a Primeira chega cun incremento medio do 41,4 %, con zonas nas que a subida supera o 60 %. Engádese ademais o «compromiso de asistencia». O malestar esténdese ao entenderse que non se ten en conta a fidelidade demostrada durante os anos máis difíciles.",
-      image: "img/ticket.jpg",
+      image: "img/ticket.webp",
       source: {
         label: "Comunicado do RC Deportivo",
         url: "https://www.rcdeportivo.es/gl/noticias/o-teu-lugar-en-primeira-los-nuevos-abonos-del-depor-para-vivir-el-regreso-a-laliga-ea-sports-en"
@@ -93,7 +93,7 @@ window.DEPOR_DATA = {
       kicker: "O comezo da mobilización",
       title: "Centos de persoas reúnense en asemblea",
       body: "O club revela que chegou a propoñer prezos reducidos a unha parte de Maratón a cambio de aceptar o novo réxime de condicións. Riazor Blues rexéitao. O 9 de xullo centos de seareiros reúnense xunto á Torre de Maratón e denuncian unha «presunción de culpabilidade».",
-      image: "img/torre-de-maraton.jpeg",
+      image: "img/torre-de-maraton.webp",
       source: {
         label: "DXT Campeón",
         url: "https://dxtcampeon.elidealgallego.com/deportivo/2026-07-09/convocan-una-manifestacion-contra-las-nuevas-normas-para-ser-socio-del-deportivo-en-marathon-inferior-867025.html"
@@ -107,7 +107,7 @@ window.DEPOR_DATA = {
       kicker: "O RC Deportivo rompe coa Federación de Peñas",
       title: "O club non renova o convenio coa Federación de Peñas",
       body: "En pleno conflito, o club anuncia que non prorrogará o acordo vixente desde 2017 e que quere negociar un novo marco. A revisión pode ter sentido, pero facelo no medio do pulso é percibido como unha nova escalada contra a afección organizada.",
-      image: "img/romper.jpg",
+      image: "img/romper.webp",
       source: {
         label: "Diario AS",
         url: "https://as.com/futbol/primera/sigue-el-pulso-el-depor-no-renovara-el-convenio-con-las-penas-f202607-n/"
@@ -163,7 +163,7 @@ window.DEPOR_DATA = {
       kicker: "Dépor - Elxe. Cárcere Maratón",
       title: "Masiva protesta no regreso da Liga",
       body: "Federación de Peñas, Old Faces e Riazor Blues chaman a vestir de laranxa, empregando a imaxe dos presos de Guantánamo. A protesta esténdese por Riazor e o estadio queda practicamente sen animación, agás entre os minutos 40 e 45 con cánticos como «Maratón solución» ou «Dépor si, ABANCA non».",
-      image: "img/laranxa.jpg",
+      image: "img/laranxa.webp",
       source: {
         label: "La Opinión A Coruña",
         url: "https://www.laopinioncoruna.es/deportivo/2026/08/18/marea-naranja-invade-riazor-deportivo-133442417.html"
@@ -177,7 +177,7 @@ window.DEPOR_DATA = {
       kicker: "Censura a xogadores e ataques á afección",
       title: "O club impide preguntar aos xogadores",
       body: "Tras o Dépor-Elxe, o xefe de prensa impide que Ximo Navarro responda a unha pregunta sobre a falta de animación, feito criticado polas asociacións de xornalistas. Horas despois, o club denuncia «insultos e presións» aos xogadores e anuncia medidas xurídicas sen achegar publicamente probas nese momento.",
-      image: "img/ximo-navarro.jpeg",
+      image: "img/ximo-navarro.webp",
       source: {
         label: "Comunicado do RC Deportivo",
         url: "https://www.rcdeportivo.es/gl/noticias/el-rc-deportivo-condena-insultos-y-presiones-dirigidos-a-sus-jugadores-y-adopta-medidas-para"
@@ -191,7 +191,7 @@ window.DEPOR_DATA = {
       kicker: "A pausada e digna resposta",
       title: "As peñas negan intimidacións e esixen falar con Benassi",
       body: "Federación de Peñas, Old Faces e Riazor Blues negan ter insultado ou intimidado os futbolistas e lembran que sempre separaron os xogadores dos responsables institucionais do conflito. Reclaman unha mesa de diálogo inmediata e ao máximo nivel con Massimo Benassi.",
-      image: "img/acordo.jpg",
+      image: "img/acordo.webp",
       source: {
         label: "Comunicado de Riazor Blues",
         url: "https://x.com/RB1987Oficial/status/2089812426560532690"

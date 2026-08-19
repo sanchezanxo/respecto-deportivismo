@@ -84,7 +84,7 @@ Desde aí pódense modificar:
 O campo `image` acepta rutas locais:
 
 ```js
-image: "img/riazor.jpg"
+image: "img/riazor.webp"
 ```
 
 ou imaxes externas:

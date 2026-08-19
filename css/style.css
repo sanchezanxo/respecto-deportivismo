@@ -92,7 +92,11 @@ body{
 }
 .social a:hover, .social button:hover{ transform:translateY(-3px); color:var(--blue); border-color:var(--blue); box-shadow:0 8px 22px rgba(0,0,0,.45); }
 .social svg{ width:17px; height:17px; fill:currentColor; }
-@media (max-width:640px){ .social{ bottom:.7rem; gap:.4rem; } .social a,.social button{ width:34px; height:34px; } }
+@media (max-width:640px){
+  .social{ bottom:.7rem; gap:.4rem; }
+  /* sen blur en móbil: o backdrop-filter é caro na GPU dos teléfonos */
+  .social a,.social button{ width:34px; height:34px; backdrop-filter:none; background:rgba(8,20,44,.8); }
+}
 
 /* ============================== DECK / STEPS ============================== */
 #deck{
@@ -124,6 +128,11 @@ body{
 }
 @media (prefers-reduced-motion: reduce){ .step__photo{ animation:none; } }
 @keyframes kenburns{ from{ transform:scale(1.05) translate(0,0); } to{ transform:scale(1.2) translate(-2%,-2%); } }
+
+/* aforro de CPU en móbil: os steps ocultos non manteñen animacións en marcha */
+.step:not(.is-active):not(.is-leaving) .step__photo,
+.step:not(.is-active):not(.is-leaving) .step__ghost{ animation-play-state:paused; }
+.step.is-active .step__photo, .step.is-leaving .step__photo{ will-change:transform; }
 
 .step__ghost{
   position:absolute; z-index:-2; font-family:var(--ff-display); line-height:.8; pointer-events:none;

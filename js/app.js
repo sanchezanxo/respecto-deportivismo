@@ -75,9 +75,11 @@
   // STEPS
   steps.forEach((s, i) => {
     const hasImg = s.image && String(s.image).trim();
-    // background-image inline no propio elemento: as rutas relativas (ex: "img/foto.jpg")
+    // A foto NON vai no HTML inicial: gárdase en data-img e aplícase logo,
+    // xa descargada e decodificada (ver PREDESCARGA), como estilo inline no
+    // propio elemento — así as rutas relativas (ex: "img/foto.jpg")
     // resólvense respecto ao HTML, non respecto a css/style.css.
-    const photo = hasImg ? `<div class="step__photo" style="background-image:url('${esc(s.image)}')"></div><div class="step__shade"></div>` : '';
+    const photo = hasImg ? `<div class="step__photo" data-img="${esc(s.image)}"></div><div class="step__shade"></div>` : '';
     const src = s.source
       ? `<a class="step__source" href="${esc(s.source.url)}" target="_blank" rel="noopener noreferrer">${esc(s.source.label)} <span class="arrow">↗</span></a>`
       : '';
@@ -144,6 +146,35 @@
   });
   const dots = Array.from(rail.children);
 
+  /* ---------- PREDESCARGA ORDENADA DAS FOTOS ----------
+     Se as fotos van no HTML inicial, o móbil descárgaas todas de golpe
+     (carga lenta) e decodifica cada JPEG xusto cando o seu step entra por
+     primeira vez (tirón na animación). No canto diso: tras o load,
+     descárganse unha a unha en segundo plano e aplícanse xa decodificadas.
+     goTo() salta a cola se navegas a un step que aínda non ten a foto. */
+  const pendingPhotos = new Map();   // elemento .step__photo -> url
+  document.querySelectorAll('.step__photo[data-img]').forEach(el => pendingPhotos.set(el, el.dataset.img));
+
+  function applyPhoto(el) {
+    const url = pendingPhotos.get(el);
+    if (!url) return Promise.resolve();
+    pendingPhotos.delete(el);
+    const im = new Image();
+    im.src = url;
+    return (im.decode ? im.decode().catch(() => {}) : Promise.resolve())
+      .then(() => { el.style.backgroundImage = 'url("' + url.replace(/"/g, '%22') + '")'; });
+  }
+
+  function preloadPhotos() {
+    (function next() {
+      const el = [...pendingPhotos.keys()][0];
+      if (!el) return;
+      applyPhoto(el).then(() => setTimeout(next, 80));   // unha a unha, con respiro
+    })();
+  }
+  if (document.readyState === 'complete') preloadPhotos();
+  else window.addEventListener('load', preloadPhotos);
+
   /* ---------- MOTOR DO DECK (sen scroll vertical) ----------
      Os steps están apilados en posición absoluta dentro dun deck fixo a
      pantalla completa. Nunca hai scroll do documento: o cambio de paso
@@ -169,6 +200,8 @@
     prev.classList.remove('is-active');
     prev.classList.add('is-leaving');
     next.classList.add('is-active');
+    const photo = next.querySelector('.step__photo');
+    if (photo) applyPhoto(photo);   // prioridade á foto do step que entra
     const inner = next.querySelector('.step__inner');
     if (inner) inner.scrollTop = 0;   // por se o step traía scroll interno de seguridade
     leaveTimer = setTimeout(() => prev.classList.remove('is-leaving'), 650);
