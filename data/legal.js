@@ -18,7 +18,7 @@ window.LEGAL_DATA = {
   title: "Aviso legal",
   updated: "Actualizado o 19 de agosto de 2026",
 
-  intro: "Este sitio é unha iniciativa cidadá e afeccionada de carácter informativo, crítico e de opinión. Non é unha web oficial do RC Deportivo, non está vinculada ao club nin foi patrocinada, encargada ou avalada por este nin por ningunha das entidades, medios, colectivos ou persoas citadas.",
+  intro: "Este sitio é unha iniciativa cidadá e voluntaria de carácter informativo, crítico e de opinión. Non é unha web oficial do RC Deportivo, non está vinculada ao club nin foi patrocinada, encargada ou avalada por este nin por ningunha das entidades, medios, colectivos ou persoas citadas.",
 
   backLabel: "← Volver ao inicio",
   backHref: "index.html",
