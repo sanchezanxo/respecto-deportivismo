@@ -68,7 +68,7 @@
         <p class="hero__intro">${esc(config.intro || '')}</p>
         <div class="hero__flag" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
       </div>
-      <div class="scrollhint"><span>Desliza</span><i class="chev"></i></div>
+      <button class="scrollhint" id="starthint" aria-label="Comezar a cronoloxía"><span>Desliza</span><i class="chev"></i></button>
     </section>
   `);
 
@@ -78,13 +78,12 @@
     // background-image inline no propio elemento: as rutas relativas (ex: "img/foto.jpg")
     // resólvense respecto ao HTML, non respecto a css/style.css.
     const photo = hasImg ? `<div class="step__photo" style="background-image:url('${esc(s.image)}')"></div><div class="step__shade"></div>` : '';
-    const styleImg = '';
     const src = s.source
       ? `<a class="step__source" href="${esc(s.source.url)}" target="_blank" rel="noopener noreferrer">${esc(s.source.label)} <span class="arrow">↗</span></a>`
       : '';
     const n = String(i + 1).padStart(2, '0');
     deck.insertAdjacentHTML('beforeend', `
-      <section class="step${hasImg ? ' has-img' : ''}" data-side="${esc(s.side)}" id="step-${i}"${styleImg}>
+      <section class="step${hasImg ? ' has-img' : ''}" data-side="${esc(s.side)}" id="step-${i}">
         <div class="step__bg"></div>
         ${photo}
         <div class="step__ghost" data-ghost>${esc(s.year || '')}</div>
@@ -127,7 +126,7 @@
   const social = document.getElementById('social');
   social.innerHTML = NET.map(n => anchor(n, false)).join('') + copyBtn(false);
 
-  /* ---------- NAV RAIL + CONTADOR ---------- */
+  /* ---------- NAV RAIL + CONTADOR + FRECHAS ---------- */
   const sections = Array.from(document.querySelectorAll('.step'));
   const rail = document.getElementById('rail');
   const cNow = document.getElementById('cNow');
@@ -140,91 +139,102 @@
       : (SIDE_NAME[sec.dataset.side] || 'Paso') + ' ' + i);
     b.dataset.label = label;
     b.setAttribute('aria-label', 'Ir a ' + label);
-    b.addEventListener('click', () => sec.scrollIntoView({ behavior: 'smooth' }));
+    b.addEventListener('click', () => goTo(i));
     rail.appendChild(b);
   });
   const dots = Array.from(rail.children);
 
-  /* ---------- ACTIVO + PROGRESO (síncrono: non depende de rAF nin de IO) ----------
-     A revelación do contido faise aquí, no propio evento de scroll, para que
-     o step centrado sexa SEMPRE visible aínda que o navegador ralentice o rAF. */
-  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  /* ---------- MOTOR DO DECK (sen scroll vertical) ----------
+     Os steps están apilados en posición absoluta dentro dun deck fixo a
+     pantalla completa. Nunca hai scroll do documento: o cambio de paso
+     faise trocando clases (.is-active / .is-leaving), que disparan o
+     crossfade do step e a animación de entrada do contido (CSS). */
   const pfill = document.getElementById('pfill');
-  let activeIdx = -1;
+  let active = 0;
+  let leaveTimer = 0;
 
-  function updateActive() {
-    const vh = window.innerHeight, c = vh / 2;
-    let idx = 0, best = Infinity;
-    for (let i = 0; i < sections.length; i++) {
-      const r = sections[i].getBoundingClientRect();
-      const d = Math.abs((r.top + r.height / 2) - c);
-      if (d < best) { best = d; idx = i; }
-    }
-    const inner = sections[idx].querySelector('.step__inner');
-    if (inner) inner.style.opacity = '1';           // garante visible o step centrado
-    sections[idx].classList.add('is-active');        // dispara a animación de entrada (CSS)
-    if (idx !== activeIdx) {
-      activeIdx = idx;
-      dots.forEach((d, i) => d.classList.toggle('is-active', i === idx));
-      cNow.textContent = String(idx + 1).padStart(2, '0');
-    }
-    const max = document.documentElement.scrollHeight - vh;
-    pfill.style.width = (max > 0 ? (window.scrollY / max) * 100 : 0) + '%';
+  function setUI() {
+    dots.forEach((d, i) => d.classList.toggle('is-active', i === active));
+    cNow.textContent = String(active + 1).padStart(2, '0');
+    pfill.style.width = (active / Math.max(1, sections.length - 1)) * 100 + '%';
   }
 
-  /* ---------- FX visual (zoom + crossfade + parallax; só polideza) ---------- */
-  let ticking = false;
-  function fx() {
-    ticking = false;
-    if (reduce) return;
-    const vh = window.innerHeight;
-    for (const sec of sections) {
-      const r = sec.getBoundingClientRect();
-      if (r.bottom < -vh * 0.5 || r.top > vh * 1.5) continue;
-      let d = ((r.top + r.height / 2) - vh / 2) / vh;
-      d = Math.max(-1, Math.min(1, d));
-      const ad = Math.abs(d);
-
-      const inner = sec.querySelector('.step__inner');
-      const bg = sec.querySelector('.step__bg');
-      const ghost = sec.querySelector('[data-ghost]');
-      const photo = sec.querySelector('.step__photo');
-
-      if (inner) {
-        inner.style.transform = `scale(${1 - ad * 0.12}) translateY(${d * 30}px)`;
-        inner.style.opacity = String(Math.max(0.06, 1 - ad * 1.15));   // crossfade entre steps
-      }
-      if (bg) bg.style.transform = `scale(1.14) translateY(${d * -6}vh)`;
-      if (ghost) ghost.style.transform = `translate(-50%,-50%) translateY(${d * 10}vh) scale(${1 + ad * 0.05})`;
-      if (photo) photo.style.transform = `scale(${1.1 + ad * 0.06}) translateY(${d * -4}vh)`;
-    }
+  function goTo(target) {
+    target = Math.max(0, Math.min(sections.length - 1, target));
+    if (target === active) return;
+    const prev = sections[active];
+    const next = sections[target];
+    clearTimeout(leaveTimer);
+    sections.forEach(s => s.classList.remove('is-leaving'));
+    prev.classList.remove('is-active');
+    prev.classList.add('is-leaving');
+    next.classList.add('is-active');
+    const inner = next.querySelector('.step__inner');
+    if (inner) inner.scrollTop = 0;   // por se o step traía scroll interno de seguridade
+    leaveTimer = setTimeout(() => prev.classList.remove('is-leaving'), 650);
+    active = target;
+    setUI();
   }
-  function onScroll() {
-    updateActive();                                              // síncrono
-    if (!ticking) { ticking = true; requestAnimationFrame(fx); } // asíncrono (polideza)
+
+  sections[0].classList.add('is-active');
+  setUI();
+
+  /* O contido dun step só fai scroll interno se non colle en pantalla
+     (válvula de seguridade en móbiles moi pequenos). Esta función di se
+     ese scroll interno aínda ten percorrido na dirección do xesto. */
+  function innerBlocks(delta) {
+    const inner = sections[active].querySelector('.step__inner');
+    if (!inner || inner.scrollHeight <= inner.clientHeight + 1) return false;
+    if (delta > 0) return inner.scrollTop + inner.clientHeight < inner.scrollHeight - 1;
+    return inner.scrollTop > 1;
   }
-  window.addEventListener('scroll', onScroll, { passive: true });
-  window.addEventListener('resize', onScroll);
-  updateActive();
-  fx();
+
+  /* ---------- RODA ---------- */
+  let wheelLock = 0;
+  window.addEventListener('wheel', (e) => {
+    if (e.ctrlKey) return;                    // zoom do navegador
+    if (innerBlocks(e.deltaY)) return;        // deixa correr o scroll interno
+    e.preventDefault();
+    if (Math.abs(e.deltaY) < 18) return;
+    const now = performance.now();
+    if (now < wheelLock) return;
+    wheelLock = now + 700;                    // absorbe a inercia do trackpad
+    goTo(active + (e.deltaY > 0 ? 1 : -1));
+  }, { passive: false });
+
+  /* ---------- SWIPE ---------- */
+  let tY = null, tX = 0, tScrollTop = 0;
+  window.addEventListener('touchstart', (e) => {
+    if (e.touches.length !== 1) { tY = null; return; }
+    tY = e.touches[0].clientY;
+    tX = e.touches[0].clientX;
+    const inner = sections[active].querySelector('.step__inner');
+    tScrollTop = inner ? inner.scrollTop : 0;
+  }, { passive: true });
+  window.addEventListener('touchend', (e) => {
+    if (tY === null) return;
+    const t = e.changedTouches[0];
+    const dy = tY - t.clientY;
+    const dx = tX - t.clientX;
+    tY = null;
+    if (Math.abs(dy) < 48 || Math.abs(dx) > Math.abs(dy)) return;
+    const inner = sections[active].querySelector('.step__inner');
+    if (inner && Math.abs(inner.scrollTop - tScrollTop) > 4) return;  // o xesto foi scroll interno
+    if (innerBlocks(dy)) return;
+    goTo(active + (dy > 0 ? 1 : -1));
+  }, { passive: true });
 
   /* ---------- TECLADO ---------- */
-  function current() {
-    const c = window.innerHeight / 2;
-    let best = 0, bestD = Infinity;
-    sections.forEach((s, i) => {
-      const r = s.getBoundingClientRect();
-      const d = Math.abs((r.top + r.height / 2) - c);
-      if (d < bestD) { bestD = d; best = i; }
-    });
-    return best;
-  }
   window.addEventListener('keydown', (e) => {
-    if (['ArrowDown', 'PageDown', ' '].includes(e.key)) { e.preventDefault(); sections[Math.min(sections.length - 1, current() + 1)].scrollIntoView({ behavior: 'smooth' }); }
-    else if (['ArrowUp', 'PageUp'].includes(e.key)) { e.preventDefault(); sections[Math.max(0, current() - 1)].scrollIntoView({ behavior: 'smooth' }); }
-    else if (e.key === 'Home') { e.preventDefault(); sections[0].scrollIntoView({ behavior: 'smooth' }); }
-    else if (e.key === 'End') { e.preventDefault(); sections[sections.length - 1].scrollIntoView({ behavior: 'smooth' }); }
+    if (['ArrowDown', 'ArrowRight', 'PageDown', ' '].includes(e.key)) { e.preventDefault(); goTo(active + 1); }
+    else if (['ArrowUp', 'ArrowLeft', 'PageUp'].includes(e.key)) { e.preventDefault(); goTo(active - 1); }
+    else if (e.key === 'Home') { e.preventDefault(); goTo(0); }
+    else if (e.key === 'End') { e.preventDefault(); goTo(sections.length - 1); }
   });
+
+  /* ---------- BOTÓNS DE NAVEGACIÓN ---------- */
+  document.getElementById('starthint').addEventListener('click', () => goTo(1));
+  document.getElementById('backtop').addEventListener('click', () => goTo(0));
 
   /* ---------- COMPARTIR (copiar + nativo) ---------- */
   let toastEl;
@@ -246,6 +256,4 @@
       try { await navigator.share({ title: config.name, text: shareText, url: shareUrl }); } catch (_) {}
     }
   });
-
-  document.getElementById('backtop').addEventListener('click', () => sections[0].scrollIntoView({ behavior: 'smooth' }));
 })();

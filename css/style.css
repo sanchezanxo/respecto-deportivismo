@@ -10,7 +10,7 @@
   --alarm-2:   #ff6a3d;
   --ink:       #030c1e;
 
-  
+
   --ff-display: "Anton", "Arial Narrow", sans-serif;
   --ff-text:    "Inter", system-ui, sans-serif;
   --ff-mono:    "Space Mono", ui-monospace, monospace;
@@ -19,15 +19,17 @@
 }
 
 *{ box-sizing:border-box; margin:0; padding:0; }
-html{ scroll-snap-type: y mandatory; -webkit-text-size-adjust:100%; }
-@media (prefers-reduced-motion: reduce){ html{ scroll-snap-type:none; scroll-behavior:auto; } }
+
+/* Sen scroll vertical: o documento nunca fai scroll, o deck é fixo a
+   pantalla completa e os steps cámbianse por JS (roda/swipe/teclado). */
+html{ height:100%; overflow:hidden; -webkit-text-size-adjust:100%; }
 
 body{
+  height:100%; overflow:hidden; overscroll-behavior:none;
   font-family: var(--ff-text);
   background: var(--navy);
   color: var(--white);
   -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
 }
 
 /* ============================== NOISE / GRAIN ============================== */
@@ -45,7 +47,7 @@ body{
 
 /* ============================== FIXED UI ============================== */
 .progress{ position:fixed; top:0; left:0; right:0; height:4px; z-index:1000; background:rgba(255,255,255,.08); }
-.progress__fill{ height:100%; width:0; background:linear-gradient(90deg, var(--blue), var(--white)); box-shadow:0 0 18px var(--blue); transition:width .12s linear; }
+.progress__fill{ height:100%; width:0; background:linear-gradient(90deg, var(--blue), var(--white)); box-shadow:0 0 18px var(--blue); transition:width .5s cubic-bezier(.2,.8,.2,1); }
 
 .brand{
   position:fixed; top:1.1rem; left:var(--pad); z-index:1000;
@@ -93,17 +95,31 @@ body{
 @media (max-width:640px){ .social{ bottom:.7rem; gap:.4rem; } .social a,.social button{ width:34px; height:34px; } }
 
 /* ============================== DECK / STEPS ============================== */
-.step{
-  position:relative; height:100svh; scroll-snap-align:start; scroll-snap-stop:always;
-  display:grid; place-items:center; overflow:hidden; isolation:isolate;
+#deck{
+  position:fixed; inset:0; overflow:hidden;
+  touch-action:pinch-zoom;   /* o swipe xestiónao o JS; o zoom queda libre */
 }
 
+.step{
+  position:absolute; inset:0; z-index:0;
+  display:grid; place-items:center; overflow:hidden; isolation:isolate;
+  opacity:0; visibility:hidden; pointer-events:none;
+  transition:opacity .55s ease, visibility 0s linear .55s;
+}
+.step.is-active{
+  opacity:1; visibility:visible; pointer-events:auto; z-index:2;
+  transition:opacity .55s ease;
+}
+/* o step saínte mantense visible mentres esvaece baixo o entrante */
+.step.is-leaving{ visibility:visible; z-index:1; transition:opacity .55s ease; }
+.step.is-leaving .step__inner > *{ opacity:1; transform:none; }
+
 /* background layers */
-.step__bg{ position:absolute; inset:-8%; z-index:-4; background-position:center; background-size:cover; will-change:transform; }
+.step__bg{ position:absolute; inset:-8%; z-index:-4; background-position:center; background-size:cover; }
 .step__photo{
   position:absolute; inset:-6%; z-index:-3;
   background-position:center; background-size:cover; background-repeat:no-repeat;
-  filter:grayscale(.85) contrast(1.03) brightness(.82); opacity:.32; will-change:transform;
+  filter:grayscale(.85) contrast(1.03) brightness(.82); opacity:.32;
   animation:kenburns 26s ease-in-out infinite alternate;
 }
 @media (prefers-reduced-motion: reduce){ .step__photo{ animation:none; } }
@@ -112,8 +128,11 @@ body{
 .step__ghost{
   position:absolute; z-index:-2; font-family:var(--ff-display); line-height:.8; pointer-events:none;
   font-size:clamp(16rem,52vw,44rem); color:rgba(255,255,255,.04); left:50%; top:50%;
-  transform:translate(-50%,-50%); white-space:nowrap; will-change:transform;
+  transform:translate(-50%,-50%); white-space:nowrap;
+  animation:ghostdrift 16s ease-in-out infinite alternate;
 }
+@keyframes ghostdrift{ from{ transform:translate(-50%,-50%) scale(1); } to{ transform:translate(-50%,-52%) scale(1.04); } }
+@media (prefers-reduced-motion: reduce){ .step__ghost{ animation:none; } }
 .step__scrim{ position:absolute; inset:0; z-index:-1; }
 .step__shade{ position:absolute; inset:0; z-index:-1; background:linear-gradient(180deg, rgba(3,8,20,.15) 0%, rgba(3,8,20,.5) 55%, rgba(3,8,20,.82) 100%); }
 
@@ -159,11 +178,17 @@ body{
 }
 .step[data-side="info"] .step__photo{ filter:grayscale(.85) contrast(1.03) brightness(.84); }
 
-/* inner content wrapper */
+/* inner content wrapper
+   max-height + overflow:auto é só unha válvula de seguridade para
+   pantallas moi pequenas: se o contido colle (o normal), non hai scroll. */
 .step__inner{
   position:relative; width:100%; max-width:1200px; padding:var(--pad); padding-top:6rem;
-  display:grid; gap:1.1rem; will-change:transform,opacity;
+  display:grid; gap:1.1rem;
+  max-height:100%; overflow-y:auto; overscroll-behavior:contain;
+  touch-action:pan-y pinch-zoom;
+  scrollbar-width:none;
 }
+.step__inner::-webkit-scrollbar{ display:none; }
 
 .step__index{
   position:absolute; top:5.5rem; right:var(--pad); font-family:var(--ff-display);
@@ -171,7 +196,7 @@ body{
 }
 
 .step__kicker{
-  display:inline-block; width:max-content;
+  display:inline-block; width:max-content; max-width:100%;
   font-family:var(--ff-mono); font-weight:700; font-size:clamp(.6rem,1.5vw,.75rem);
   letter-spacing:.28em; text-transform:uppercase; color:var(--accent);
 }
@@ -217,6 +242,7 @@ body{
 .step.is-active .step__index{ opacity:1; }
 @media (prefers-reduced-motion: reduce){
   .step__inner > *{ opacity:1 !important; transform:none !important; }
+  .step, .step.is-active, .step.is-leaving{ transition-duration:.001s; }
 }
 
 /* ============================== HERO ============================== */
@@ -250,7 +276,12 @@ body{
 .hero__flag i{ display:block; width:46px; height:14px; }
 .hero__flag i:nth-child(odd){ background:var(--blue); } .hero__flag i:nth-child(even){ background:#fff; }
 
-.scrollhint{ position:absolute; bottom:1.8rem; left:50%; transform:translateX(-50%); display:grid; place-items:center; gap:.5rem; z-index:5; }
+/* agora é un botón: arrinca a cronoloxía ao premer */
+.scrollhint{
+  position:absolute; bottom:1.8rem; left:50%; transform:translateX(-50%);
+  display:grid; place-items:center; gap:.5rem; z-index:5;
+  background:none; border:0; cursor:pointer; padding:.4rem;
+}
 .scrollhint span{ font-family:var(--ff-mono); font-size:.66rem; letter-spacing:.3em; text-transform:uppercase; color:rgba(255,255,255,.6); }
 .scrollhint .chev{ width:22px; height:22px; border-right:2px solid var(--blue); border-bottom:2px solid var(--blue); transform:rotate(45deg); animation:bob 1.6s ease-in-out infinite; }
 @keyframes bob{ 0%,100%{transform:rotate(45deg) translate(0,0);opacity:.4} 50%{transform:rotate(45deg) translate(4px,4px);opacity:1} }
@@ -278,6 +309,38 @@ body{
 .backtop:hover{ color:#fff; }
 .outro__legal{ color:rgba(255,255,255,.4); font-family:var(--ff-mono); font-size:.68rem; letter-spacing:.12em; text-transform:uppercase; text-decoration:none; }
 .outro__legal:hover{ color:var(--blue); }
+
+/* ============================== AXUSTES DE ENCAIXE ==============================
+   Sen scroll, cada step ten que caber en pantalla: en móbil e en pantallas
+   baixas redúcese lixeiramente a escala tipográfica e os espazos. */
+@media (max-width:640px){
+  .step__inner{ gap:.9rem; padding-top:4.5rem; padding-bottom:4.5rem; }
+  .step__title{ font-size:clamp(2.1rem, 9.5vw, 3.1rem); }
+  .step__body{ font-size:.92rem; line-height:1.55; }
+  .step__index{ top:4.3rem; font-size:2.4rem; right:1.25rem; }
+  .step__source{ padding:.75rem .95rem; font-size:.72rem; }
+  .hero__title{ font-size:clamp(2.6rem, 13vw, 4.6rem); }
+  .hero__flag i{ width:34px; height:11px; }
+  .outro__title{ font-size:clamp(2.2rem, 10vw, 4rem); }
+  /* na pantalla final os botóns de compartir pasan a iconas para caber sen scroll */
+  .outro .step__inner{ gap:.9rem; }
+  .share{ gap:.5rem; }
+  .share a span, .share button span{ display:none; }
+  .share a, .share button{ width:42px; height:42px; padding:0; justify-content:center; gap:0; }
+}
+@media (max-height:700px) and (min-width:641px){
+  .step__inner{ gap:.8rem; padding-top:5rem; }
+  .step__title{ font-size:clamp(2.2rem,5vw,4.4rem); }
+  .hero__title{ font-size:clamp(2.6rem,8vw,6.5rem); }
+  .outro__title{ font-size:clamp(2.2rem,7vw,5rem); }
+}
+@media (max-height:560px){
+  .step__inner{ gap:.6rem; }
+  .step__title{ font-size:clamp(1.7rem,4.5vw,3.2rem); }
+  .step__body{ font-size:.85rem; line-height:1.45; }
+  .hero__flag{ display:none; }
+  .scrollhint{ display:none; }
+}
 
 /* ============================== TOAST ============================== */
 .toast{

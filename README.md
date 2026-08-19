@@ -2,7 +2,7 @@
 
 Timeline web sobre o conflito entre a dirección do RC Deportivo e unha parte da súa afección tras o regreso do club a Primeira División en 2026.
 
-O proxecto presenta os principais acontecementos nunha cronoloxía vertical a pantalla completa, diferenciando entre decisións do club, respostas dos seareiros e información de contexto.
+O proxecto presenta os principais acontecementos nunha cronoloxía a pantalla completa, paso a paso e sen scroll vertical: avánzase coa roda do rato, coas frechas do teclado, cos botóns en pantalla ou deslizando o dedo en móbil. Diferénciase entre decisións do club, respostas dos seareiros e información de contexto.
 
 É unha **web estática**, sen backend, base de datos nin dependencias externas necesarias para funcionar.
 
