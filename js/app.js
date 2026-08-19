@@ -155,14 +155,28 @@
   const pendingPhotos = new Map();   // elemento .step__photo -> url
   document.querySelectorAll('.step__photo[data-img]').forEach(el => pendingPhotos.set(el, el.dataset.img));
 
+  // En pantallas pequenas próbase primeiro a variante lixeira img/m/nome.webp
+  // (1080px de ancho); se non existe, cáese automaticamente na imaxe completa.
+  const SMALL_SCREEN = window.matchMedia('(max-width: 640px)').matches;
+  const mobileSrc = url => (SMALL_SCREEN && /^img\//.test(url))
+    ? url.replace(/^img\//, 'img/m/').replace(/\.[a-z]+$/i, '.webp')
+    : url;
+
   function applyPhoto(el) {
     const url = pendingPhotos.get(el);
     if (!url) return Promise.resolve();
     pendingPhotos.delete(el);
-    const im = new Image();
-    im.src = url;
-    return (im.decode ? im.decode().catch(() => {}) : Promise.resolve())
-      .then(() => { el.style.backgroundImage = 'url("' + url.replace(/"/g, '%22') + '")'; });
+    const tryLoad = (src, fallback) => new Promise(done => {
+      const im = new Image();
+      im.onload = () => {
+        const paint = () => { el.style.backgroundImage = 'url("' + src.replace(/"/g, '%22') + '")'; done(); };
+        im.decode ? im.decode().then(paint, paint) : paint();
+      };
+      im.onerror = () => { fallback ? tryLoad(fallback, null).then(done) : done(); };
+      im.src = src;
+    });
+    const src = mobileSrc(url);
+    return tryLoad(src, src !== url ? url : null);
   }
 
   function preloadPhotos() {
@@ -199,7 +213,14 @@
     sections.forEach(s => s.classList.remove('is-leaving'));
     prev.classList.remove('is-active');
     prev.classList.add('is-leaving');
+    // WebKit (iOS) non arranca transicións en elementos que veñen dun
+    // subárbore con visibility:hidden: primeiro faise visible o step
+    // (is-prep), fórzase un recálculo de estilo, e só entón actívase.
+    // Sen isto, os textos aparecen de golpe en Safari/Chrome/Opera de iOS.
+    next.classList.add('is-prep');
+    void next.offsetWidth;
     next.classList.add('is-active');
+    next.classList.remove('is-prep');
     const photo = next.querySelector('.step__photo');
     if (photo) applyPhoto(photo);   // prioridade á foto do step que entra
     const inner = next.querySelector('.step__inner');

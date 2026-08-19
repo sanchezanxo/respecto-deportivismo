@@ -44,6 +44,8 @@ body{
   60%{transform:translate(-2%,4%)} 80%{transform:translate(4%,2%)} 100%{transform:translate(0,0)}
 }
 @media (prefers-reduced-motion: reduce){ .grain{ animation:none; } }
+/* en móbil o gran queda estático: a textura vese igual e afórrase GPU */
+@media (max-width:640px){ .grain{ animation:none; } }
 
 /* ============================== FIXED UI ============================== */
 .progress{ position:fixed; top:0; left:0; right:0; height:4px; z-index:1000; background:rgba(255,255,255,.08); }
@@ -114,6 +116,8 @@ body{
   opacity:1; visibility:visible; pointer-events:auto; z-index:2;
   transition:opacity .55s ease;
 }
+/* paso previo á activación: visible pero aínda transparente (ver goTo en app.js) */
+.step.is-prep{ visibility:visible; }
 /* o step saínte mantense visible mentres esvaece baixo o entrante */
 .step.is-leaving{ visibility:visible; z-index:1; transition:opacity .55s ease; }
 .step.is-leaving .step__inner > *{ opacity:1; transform:none; }
@@ -250,8 +254,11 @@ body{
 .step__index{ opacity:.001; transition:opacity .8s ease .2s; }
 .step.is-active .step__index{ opacity:1; }
 @media (prefers-reduced-motion: reduce){
-  .step__inner > *{ opacity:1 !important; transform:none !important; }
-  .step, .step.is-active, .step.is-leaving{ transition-duration:.001s; }
+  /* Con "reducir movemento" activo (axuste de accesibilidade, común en iOS)
+     elimínase o desprazamento pero mantense un fundido de opacidade breve:
+     así o contido non aparece de golpe. */
+  .step__inner > *{ transform:none !important; }
+  .step.is-active .step__inner > *{ transition:opacity .45s ease; }
 }
 
 /* ============================== HERO ============================== */

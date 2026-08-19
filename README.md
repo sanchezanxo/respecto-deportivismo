@@ -95,6 +95,8 @@ image: "https://exemplo.gal/foto.jpg"
 
 É recomendable gardar as imaxes dentro de `/img` para que a web sexa autocontida.
 
+En pantallas pequenas a web tenta cargar primeiro unha variante lixeira en `img/m/nome.webp` (1080px de ancho); se non existe, usa automaticamente a imaxe completa. Ao engadir unha foto nova, crear tamén a súa variante en `img/m/` é opcional pero recomendable.
+
 As fotografías incluídas no proxecto poden ter licenzas e titulares diferentes. Consulta o apartado de licenzas antes de reutilizalas.
 
 ## Aviso legal
