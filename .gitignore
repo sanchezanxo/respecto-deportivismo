@@ -1,0 +1,15 @@
+# Sistema
+.DS_Store
+Thumbs.db
+*~
+
+# Editores
+.vscode/
+.idea/
+
+# Copias de seguranza locais
+data/*_bck.js
+*_bck.*
+
+# Ferramenta local de publicación
+publicar.sh

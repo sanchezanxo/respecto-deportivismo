@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="gl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Aviso legal</title>
+  <meta name="robots" content="noindex" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%92%99%3C/text%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="css/fonts.css" />
+  <style>
+    :root{
+      --blue:#1f83ff;      /* cor corporativa */
+      --blue-deep:#0a4aa2;
+      --ink:#0b1f3a;       /* texto (navy corporativo, lexible sobre branco) */
+      --muted:#5b6b82;
+      --line:#e6ecf5;
+      --ff-display:"Anton","Arial Narrow",sans-serif;
+      --ff-text:"Inter",system-ui,sans-serif;
+      --ff-mono:"Space Mono",ui-monospace,monospace;
+    }
+    *{ box-sizing:border-box; margin:0; padding:0; }
+    body{ background:#fff; color:var(--ink); font-family:var(--ff-text); line-height:1.6;
+          -webkit-font-smoothing:antialiased; padding:clamp(1.5rem,5vw,4rem); }
+    .wrap{ max-width:760px; margin:0 auto; }
+
+    .top{ display:flex; align-items:center; justify-content:space-between; gap:1rem;
+          padding-bottom:1.4rem; margin-bottom:2rem; border-bottom:2px solid var(--line); }
+    .mark{ display:flex; align-items:center; gap:.6rem; font-family:var(--ff-display);
+           text-transform:uppercase; letter-spacing:.05em; color:var(--blue); font-size:1.15rem; }
+    .mark .dot{ width:12px; height:12px; border-radius:50%; background:var(--blue); }
+
+    .back{ display:inline-flex; align-items:center; gap:.4rem; text-decoration:none; white-space:nowrap;
+           font-family:var(--ff-mono); font-size:.8rem; letter-spacing:.04em; font-weight:700;
+           color:#fff; background:var(--blue); padding:.7rem 1.15rem; border-radius:100px;
+           border:2px solid var(--blue); transition:background .2s, color .2s; }
+    .back:hover{ background:#fff; color:var(--blue); }
+
+    h1{ font-family:var(--ff-display); text-transform:uppercase; color:var(--blue);
+        font-size:clamp(2.4rem,7vw,4rem); line-height:1; letter-spacing:.01em; }
+    .updated{ font-family:var(--ff-mono); font-size:.78rem; color:var(--muted);
+              margin-top:.6rem; letter-spacing:.04em; }
+    .intro{ margin-top:1.4rem; font-size:1.12rem; font-weight:500; color:var(--blue-deep); }
+
+    section{ margin-top:2rem; }
+    h2{ font-family:var(--ff-text); font-weight:800; color:var(--blue); font-size:1.15rem;
+        letter-spacing:.01em; margin-bottom:.4rem; }
+    section p{ color:var(--ink); }
+    a{ color:var(--blue); }
+
+    .foot{ margin-top:3rem; padding-top:1.5rem; border-top:2px solid var(--line);
+           display:flex; justify-content:center; }
+
+    #err{ color:#c02036; font-family:var(--ff-mono); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <span class="mark"><span class="dot"></span><span id="mark">Respecto</span></span>
+      <a class="back" id="backTop" href="index.html">← Volver ao inicio</a>
+    </div>
+
+    <main id="doc"><p id="err">Cargando…</p></main>
+
+    <div class="foot">
+      <a class="back" id="backBottom" href="index.html">← Volver ao inicio</a>
+    </div>
+  </div>
+
+  <script src="data/legal.js"></script>
+  <script>
+    (function () {
+      var D = window.LEGAL_DATA;
+      var doc = document.getElementById('doc');
+      if (!D) { doc.innerHTML = '<p id="err">Non se atopou o texto legal (data/legal.js).</p>'; return; }
+
+      function esc(s){ return String(s == null ? '' : s).replace(/[&<>"]/g, function(c){
+        return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+
+      document.title = D.title || 'Aviso legal';
+      if (D.mark) document.getElementById('mark').textContent = D.mark;
+
+      var html = '';
+      if (D.title)   html += '<h1>' + esc(D.title) + '</h1>';
+      if (D.updated) html += '<p class="updated">' + esc(D.updated) + '</p>';
+      if (D.intro)   html += '<p class="intro">' + esc(D.intro) + '</p>';
+      (D.sections || []).forEach(function (s) {
+        html += '<section>';
+        if (s.h) html += '<h2>' + esc(s.h) + '</h2>';
+        if (s.p) html += '<p>' + esc(s.p) + '</p>';
+        html += '</section>';
+      });
+      doc.innerHTML = html;
+
+      var href = D.backHref || 'index.html';
+      var label = D.backLabel || '← Volver ao inicio';
+      ['backTop', 'backBottom'].forEach(function (id) {
+        var b = document.getElementById(id);
+        b.setAttribute('href', href);
+        b.textContent = label;
+      });
+    })();
+  </script>
+</body>
+</html>
