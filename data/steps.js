@@ -7,7 +7,7 @@ window.DEPOR_DATA = {
 
     // Compartir en redes:
     shareUrl: "#",
-    shareText: "Do ascenso á ruptura: cronoloxía do conflito entre o RC Deportivo e a súa afección.",
+    shareText: "Respecto para o Deportivismo.",
 
     // Pantalla final:
     outro_title: "Respecto para o Deportivismo",
@@ -35,7 +35,7 @@ window.DEPOR_DATA = {
       year: "2026",
       side: "dignidade",
       kicker: "O punto de partida",
-      title: "O Deportivo volve a Primeira coa súa afección ao lado",
+      title: "O Dépor volve a Primeira a carón da súa xente",
       body: "O Dépor certifica o ascenso oito anos despois de abandonar a máxima categoría. Faino acompañado por milleiros de deportivistas e cunha masa social que sostivo o club mesmo nos anos de Primeira Federación.",
       image: "img/ascenso.avif",
       source: {
