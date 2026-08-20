@@ -15,6 +15,53 @@
 
   const esc = (s = '') => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
+  /* ---------- IDIOMA ----------
+     Cada texto traducible en data/steps.js pode ser un obxecto { gl:…, en:… }.
+     t() devolve a variante do idioma activo (con recuncho ao idioma por
+     defecto); un texto normal (sen chaves de idioma) devólvese tal cal.
+     ui() fai o mesmo para os textos de interface do bloque DATA.strings.
+     Idioma resólvese: ?lang= da URL → localStorage → navegador → por defecto. */
+  const LANGS = DATA.languages || { gl: 'Galego' };
+  const DEFAULT_LANG = DATA.defaultLang || Object.keys(LANGS)[0];
+  const LANG_KEYS = Object.keys(LANGS);
+  const STR = DATA.strings || {};
+
+  function pickLang() {
+    const q = new URLSearchParams(location.search).get('lang');
+    if (q && LANGS[q]) return q;
+    try { const s = localStorage.getItem('depor_lang'); if (s && LANGS[s]) return s; } catch (_) {}
+    const nav = (navigator.language || '').slice(0, 2).toLowerCase();
+    if (LANGS[nav]) return nav;
+    return DEFAULT_LANG;
+  }
+  const LANG = pickLang();
+  document.documentElement.lang = LANG;
+  try { localStorage.setItem('depor_lang', LANG); } catch (_) {}
+
+  function t(v) {
+    if (v && typeof v === 'object' && !Array.isArray(v)) {
+      if (v[LANG] != null) return v[LANG];
+      if (v[DEFAULT_LANG] != null) return v[DEFAULT_LANG];
+      const first = Object.values(v)[0];
+      return first != null ? first : '';
+    }
+    return v == null ? '' : v;
+  }
+  function ui(k) {
+    const a = STR[LANG] && STR[LANG][k];
+    if (a != null) return a;
+    const b = STR[DEFAULT_LANG] && STR[DEFAULT_LANG][k];
+    return b != null ? b : k;
+  }
+  function setLang(next) {
+    if (!LANGS[next] || next === LANG) return;
+    try { localStorage.setItem('depor_lang', next); } catch (_) {}
+    const u = new URL(location.href);
+    if (next === DEFAULT_LANG) u.searchParams.delete('lang');
+    else u.searchParams.set('lang', next);
+    location.href = u.toString();   // recárgase e vólvese pintar no novo idioma
+  }
+
   /* ---------- iconos SVG de redes ---------- */
   const ICONS = {
     x: '<path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>',
@@ -30,7 +77,7 @@
 
   /* ---------- datos de compartir ---------- */
   const shareUrl = (config.shareUrl && config.shareUrl.trim()) ? config.shareUrl.trim() : location.href;
-  const shareText = config.shareText || ((config.name || '') + ' — ' + (config.tagline || ''));
+  const shareText = t(config.shareText) || ((t(config.name) || '') + ' — ' + (t(config.tagline) || ''));
   const U = encodeURIComponent(shareUrl);
   const T = encodeURIComponent(shareText);
   const NET = [
@@ -41,13 +88,13 @@
     { k: 'bluesky',  label: 'Bluesky',  href: `https://bsky.app/intent/compose?text=${T}%20${U}` },
   ];
   const anchor = (n, labeled) =>
-    `<a class="sh sh--${n.k}" href="${n.href}" target="_blank" rel="noopener noreferrer" title="Compartir en ${n.label}" aria-label="Compartir en ${n.label}">${svg(n.k)}${labeled ? `<span>${n.label}</span>` : ''}</a>`;
-  const copyBtn = labeled => `<button class="sh js-copy" title="Copiar ligazón" aria-label="Copiar ligazón">${svg('copy')}${labeled ? '<span>Copiar</span>' : ''}</button>`;
-  const nativeBtn = labeled => `<button class="sh js-native" title="Compartir" aria-label="Compartir">${svg('share')}${labeled ? '<span>Compartir…</span>' : ''}</button>`;
+    `<a class="sh sh--${n.k}" href="${n.href}" target="_blank" rel="noopener noreferrer" title="${esc(ui('shareOn'))} ${esc(n.label)}" aria-label="${esc(ui('shareOn'))} ${esc(n.label)}">${svg(n.k)}${labeled ? `<span>${esc(n.label)}</span>` : ''}</a>`;
+  const copyBtn = labeled => `<button class="sh js-copy" title="${esc(ui('copyLink'))}" aria-label="${esc(ui('copyLink'))}">${svg('copy')}${labeled ? `<span>${esc(ui('copy'))}</span>` : ''}</button>`;
+  const nativeBtn = labeled => `<button class="sh js-native" title="${esc(ui('share'))}" aria-label="${esc(ui('share'))}">${svg('share')}${labeled ? `<span>${esc(ui('shareEllipsis'))}</span>` : ''}</button>`;
 
   /* ---------- documento ---------- */
-  document.getElementById('brandName').textContent = config.name || 'Timeline';
-  document.title = (config.name || 'Timeline') + ' — ' + (config.tagline || '');
+  document.getElementById('brandName').textContent = t(config.name) || 'Timeline';
+  document.title = (t(config.name) || 'Timeline') + ' — ' + (t(config.tagline) || '');
 
   // HERO · escudo de fondo (config.heroCrest; por defecto o escudo branco en /img).
   // Pon config.heroCrest:"" para volver ao nome xigante de fondo.
@@ -56,19 +103,19 @@
   const useCrest = !!(heroCrest && String(heroCrest).trim());
   const crestEl = useCrest
     ? crestSVG()
-    : `<div class="step__ghost" data-ghost>${esc(config.name || '')}</div>`;
+    : `<div class="step__ghost" data-ghost>${esc(t(config.name))}</div>`;
   deck.insertAdjacentHTML('beforeend', `
     <section class="step hero" data-side="dignidade" id="step-hero">
       <div class="step__bg"></div>
       ${crestEl}
       <div class="step__scrim"></div>
       <div class="step__inner">
-        <p class="hero__kick">${esc(config.tagline || '')}</p>
-        <h1 class="hero__title">${esc(config.name || '')}</h1>
-        <p class="hero__intro">${esc(config.intro || '')}</p>
+        <p class="hero__kick">${esc(t(config.tagline))}</p>
+        <h1 class="hero__title">${esc(t(config.name))}</h1>
+        <p class="hero__intro">${esc(t(config.intro))}</p>
         <div class="hero__flag" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
       </div>
-      <button class="scrollhint" id="starthint" aria-label="Comezar a cronoloxía"><span>Desliza</span><i class="chev"></i></button>
+      <button class="scrollhint" id="starthint" aria-label="${esc(ui('startAria'))}"><span>${esc(ui('swipe'))}</span><i class="chev"></i></button>
     </section>
   `);
 
@@ -81,21 +128,21 @@
     // resólvense respecto ao HTML, non respecto a css/style.css.
     const photo = hasImg ? `<div class="step__photo" data-img="${esc(s.image)}"></div><div class="step__shade"></div>` : '';
     const src = s.source
-      ? `<a class="step__source" href="${esc(s.source.url)}" target="_blank" rel="noopener noreferrer">${esc(s.source.label)} <span class="arrow">↗</span></a>`
+      ? `<a class="step__source" href="${esc(s.source.url)}" target="_blank" rel="noopener noreferrer">${esc(t(s.source.label))} <span class="arrow">↗</span></a>`
       : '';
     const n = String(i + 1).padStart(2, '0');
     deck.insertAdjacentHTML('beforeend', `
       <section class="step${hasImg ? ' has-img' : ''}" data-side="${esc(s.side)}" id="step-${i}">
         <div class="step__bg"></div>
         ${photo}
-        <div class="step__ghost" data-ghost>${esc(s.year || '')}</div>
+        <div class="step__ghost" data-ghost>${esc(t(s.year))}</div>
         <div class="step__scrim"></div>
         <div class="step__index">${n}</div>
         <div class="step__inner">
-          <p class="step__kicker">${esc(s.kicker || '')}</p>
-          <h2 class="step__title">${esc(s.title || '')}</h2>
-          <p class="step__date">${esc(s.date || '')}</p>
-          <p class="step__body">${esc(s.body || '')}</p>
+          <p class="step__kicker">${esc(t(s.kicker))}</p>
+          <h2 class="step__title">${esc(t(s.title))}</h2>
+          <p class="step__date">${esc(t(s.date))}</p>
+          <p class="step__body">${esc(t(s.body))}</p>
           ${src}
         </div>
       </section>
@@ -107,40 +154,61 @@
   deck.insertAdjacentHTML('beforeend', `
     <section class="step outro" data-side="dignidade" id="step-outro">
       <div class="step__bg"></div>
-      ${useCrest ? crestSVG() : `<div class="step__ghost" data-ghost>NÓS</div>`}
+      ${useCrest ? crestSVG() : `<div class="step__ghost" data-ghost>${esc(ui('usGhost'))}</div>`}
       <div class="step__scrim"></div>
       <div class="step__inner">
-        <h2 class="outro__title">${esc(config.outro_title || '')}</h2>
-        <p class="outro__body">${esc(config.outro_body || '')}</p>
-        <p class="outro__cta">${esc(config.outro_cta || 'Comparte')}</p>
+        <h2 class="outro__title">${esc(t(config.outro_title))}</h2>
+        <p class="outro__body">${esc(t(config.outro_body))}</p>
+        <p class="outro__cta">${esc(t(config.outro_cta) || ui('shareCta'))}</p>
         <div class="share">
           ${canNative ? nativeBtn(true) : ''}
           ${NET.map(n => anchor(n, true)).join('')}
           ${copyBtn(true)}
         </div>
-        <button class="backtop" id="backtop">↑ Volver ao inicio</button>
-        <a class="outro__legal" href="${esc(config.legalHref || 'legal.html')}">Aviso legal</a>
+        <button class="backtop" id="backtop">${esc(ui('backTop'))}</button>
+        <a class="outro__legal" href="${esc(config.legalHref || 'legal.html')}">${esc(ui('legal'))}</a>
       </div>
     </section>
   `);
 
   // DOCK social fixo (só iconos)
   const social = document.getElementById('social');
+  social.setAttribute('aria-label', ui('socialAria'));
   social.innerHTML = NET.map(n => anchor(n, false)).join('') + copyBtn(false);
+
+  // SELECTOR DE IDIOMA (só aparece se hai máis dun idioma dispoñible)
+  const langsel = document.getElementById('langsel');
+  if (langsel) {
+    langsel.setAttribute('aria-label', ui('langAria'));
+    if (LANG_KEYS.length > 1) {
+      langsel.innerHTML = LANG_KEYS.map(k =>
+        `<button type="button" class="langsel__btn${k === LANG ? ' is-active' : ''}" data-lang="${esc(k)}" lang="${esc(k)}" aria-pressed="${k === LANG}" title="${esc(LANGS[k])}">${esc(k.toUpperCase())}</button>`
+      ).join('<span class="langsel__sep" aria-hidden="true">·</span>');
+      langsel.addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-lang]');
+        if (btn) setLang(btn.dataset.lang);
+      });
+    } else {
+      langsel.hidden = true;
+    }
+  }
 
   /* ---------- NAV RAIL + CONTADOR + FRECHAS ---------- */
   const sections = Array.from(document.querySelectorAll('.step'));
   const rail = document.getElementById('rail');
+  rail.setAttribute('aria-label', ui('railNav'));
   const cNow = document.getElementById('cNow');
-  document.getElementById('cTot').textContent = String(sections.length).padStart(2, '0');
+  // O contador vai en base 0: o hero é 00, o primeiro contido 01 (así casa co
+  // número grande de arriba á dereita de cada step) e a pantalla final NN/NN.
+  document.getElementById('cTot').textContent = String(sections.length - 1).padStart(2, '0');
 
-  const SIDE_NAME = { infamia: 'Infamia', dignidade: 'Dignidade', info: 'Info' };
+  const SIDE_NAME = { infamia: ui('side_infamia'), dignidade: ui('side_dignidade'), info: ui('side_info') };
   sections.forEach((sec, i) => {
     const b = document.createElement('button');
-    const label = i === 0 ? 'Inicio' : (i === sections.length - 1 ? 'Final'
-      : (SIDE_NAME[sec.dataset.side] || 'Paso') + ' ' + i);
+    const label = i === 0 ? ui('navStart') : (i === sections.length - 1 ? ui('navEnd')
+      : (SIDE_NAME[sec.dataset.side] || ui('navStep')) + ' ' + i);
     b.dataset.label = label;
-    b.setAttribute('aria-label', 'Ir a ' + label);
+    b.setAttribute('aria-label', ui('goTo') + ' ' + label);
     b.addEventListener('click', () => goTo(i));
     rail.appendChild(b);
   });
@@ -200,7 +268,7 @@
 
   function setUI() {
     dots.forEach((d, i) => d.classList.toggle('is-active', i === active));
-    cNow.textContent = String(active + 1).padStart(2, '0');
+    cNow.textContent = String(active).padStart(2, '0');
     pfill.style.width = (active / Math.max(1, sections.length - 1)) * 100 + '%';
   }
 
@@ -303,11 +371,11 @@
     const copy = e.target.closest('.js-copy');
     const nat = e.target.closest('.js-native');
     if (copy) {
-      try { await navigator.clipboard.writeText(shareUrl); toast('Ligazón copiada ✓'); }
-      catch (_) { toast('Copia manual: ' + shareUrl); }
+      try { await navigator.clipboard.writeText(shareUrl); toast(ui('copied')); }
+      catch (_) { toast(ui('copyManual') + ' ' + shareUrl); }
     }
     if (nat) {
-      try { await navigator.share({ title: config.name, text: shareText, url: shareUrl }); } catch (_) {}
+      try { await navigator.share({ title: t(config.name), text: shareText, url: shareUrl }); } catch (_) {}
     }
   });
 })();

@@ -37,23 +37,29 @@ Os acontecementos están en:
 data/steps.js
 ```
 
-Cada paso ten esta estrutura:
+Cada paso ten esta estrutura. Os textos traducibles son obxectos cun texto
+por idioma (`{ gl: "…", en: "…" }`); os campos non traducibles (`year`,
+`side`, `image`, `source.url`) van unha soa vez:
 
 ```js
 {
-  date: "12 de marzo de 2026",
-  year: "2026",
-  side: "infamia",
-  kicker: "Contexto",
-  title: "Título do acontecemento",
-  body: "Descrición breve do sucedido.",
+  date:  { gl: "12 de marzo de 2026", en: "12 March 2026" },
+  year:  "2026",
+  side:  "infamia",
+  kicker:{ gl: "Contexto", en: "Background" },
+  title: { gl: "Título do acontecemento", en: "Event title" },
+  body:  { gl: "Descrición breve do sucedido.", en: "Short description of what happened." },
   image: "img/foto.jpg",
   source: {
-    label: "Fonte",
+    label: { gl: "Fonte", en: "Source" },
     url: "https://..."
   },
 },
 ```
+
+Se un campo se deixa como texto normal (sen chaves de idioma), amósase igual
+en todos os idiomas (útil para nomes propios ou cánticos). Se falta a
+tradución nun idioma, úsase automaticamente a do idioma por defecto.
 
 Os valores dispoñibles para `side` son:
 
@@ -64,6 +70,40 @@ info        Contexto ou información neutral
 ```
 
 A orde dos bloques dentro de `steps` determina a orde da cronoloxía.
+
+## Idiomas
+
+Na parte superior de `data/steps.js` está a configuración de idiomas:
+
+```js
+languages: {
+  gl: "Galego",
+  en: "English",
+},
+defaultLang: "gl",
+```
+
+* `languages`: cada clave (`gl`, `en`, `es`, `pt`…) é o código que se usa nos
+  textos e no selector; o valor é o nome que se amosa.
+* `defaultLang`: idioma que se usa cando falta unha tradución ou cando o
+  navegador non coincide con ningún dos dispoñibles.
+
+O selector de idioma aparece só cando hai máis dun idioma. O idioma escóllese,
+por esta orde: parámetro `?lang=` na URL → última elección gardada no
+navegador → idioma do navegador → idioma por defecto. Ao cambialo, a web
+recárgase no novo idioma e engade `?lang=` á URL (útil para compartir unha
+ligazón directa nun idioma, por exemplo `?lang=en`).
+
+O bloque `strings` contén os textos da interface (botóns, navegación, avisos)
+cunha columna por idioma. Para **engadir un idioma**: engade a súa clave en
+`languages`, a súa columna en `strings` e a súa chave en cada campo traducido
+dos `steps` e do `config`. O que falte cae automaticamente ao `defaultLang`.
+
+**Nota sobre compartir e buscadores:** a tarxeta de compartir (a imaxe e o
+título que saen en WhatsApp, X, Facebook…) e as etiquetas para buscadores
+están en `index.html` e mantéñense no idioma orixinal, independentemente do
+idioma que escolla quen navega. Localizalas require páxinas HTML separadas por
+idioma (fase futura).
 
 ## Configuración xeral
 

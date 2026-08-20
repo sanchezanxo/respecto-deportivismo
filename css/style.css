@@ -66,6 +66,21 @@ body{
 }
 .counter b{ color:#fff; font-weight:700; }
 
+/* selector de idioma (arriba á dereita, espello do brand) */
+.langsel{
+  position:fixed; top:1.05rem; right:var(--pad); z-index:1000;
+  display:flex; align-items:center; gap:.1rem;
+}
+.langsel__btn{
+  background:none; border:0; cursor:pointer; padding:.2rem .3rem;
+  font-family:var(--ff-mono); font-size:.72rem; font-weight:700;
+  letter-spacing:.12em; text-transform:uppercase;
+  color:rgba(255,255,255,.5); transition:color .2s;
+}
+.langsel__btn:hover{ color:#fff; }
+.langsel__btn.is-active{ color:var(--blue); }
+.langsel__sep{ color:rgba(255,255,255,.22); font-size:.66rem; user-select:none; }
+
 /* right rail */
 .rail{ position:fixed; top:50%; right:clamp(.7rem,2.4vw,1.8rem); transform:translateY(-50%); z-index:1000; display:flex; flex-direction:column; gap:.7rem; }
 .rail button{
